@@ -1,0 +1,6 @@
+{
+  "name": "Vahai",
+  "description": "Deep ocean dark welcome screen with shared-element transition into a personalized Home tab for Sipiliano Vahai.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

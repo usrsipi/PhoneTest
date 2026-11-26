@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Vahai</string>
+    <string name="welcome_eyebrow">DEEP OCEAN PORTAL</string>
+    <string name="welcome_title">Welcome</string>
+    <string name="welcome_subtitle">Step beneath the surface into your personal space.</string>
+    <string name="enter_home_cta">Enter Home</string>
+    <string name="user_full_name">Sipiliano Vahai</string>
+    <string name="status_online">Online • Active</string>
+    <string name="home_tab_label">Home</string>
+    <string name="home_header_label">Personal Space</string>
+    <string name="replay_welcome_cd">Return to welcome screen</string>
+    <string name="ocean_crest_cd">Glowing ocean wave crest emblem</string>
+    <string name="greeting_morning_title">Good Morning</string>
+    <string name="greeting_morning_body">Calm tides and clear horizons ahead for your day.</string>
+    <string name="greeting_afternoon_title">Good Afternoon</string>
+    <string name="greeting_afternoon_body">Steady currents and bright focus through the afternoon.</string>
+    <string name="greeting_evening_title">Good Evening</string>
+    <string name="greeting_evening_body">Deep tranquil waters as the evening settles in.</string>
+    <string name="greeting_night_title">Good Night</string>
+    <string name="greeting_night_body">Quiet bioluminescent stillness under the night tide.</string>
+</resources>
