@@ -75,6 +75,62 @@ jobs:
         with:
           gradle-version: ${{ steps.detect.outputs.gradle_version }}
 
+      - name: Create debug.keystore if missing
+        working-directory: ${{ steps.detect.outputs.project_dir }}
+        shell: bash
+        run: |
+          if [ ! -f debug.keystore ]; then
+            python3 - << 'EOF'
+          import pathlib, re, subprocess
+
+          gradle_file = pathlib.Path("app/build.gradle.kts")
+          if not gradle_file.exists():
+              gradle_file = pathlib.Path("app/build.gradle")
+
+          store_pass = "android"
+          key_pass = "android"
+          key_alias = "androiddebugkey"
+
+          def extract_val(line, default):
+              m = re.search(r'\?:\s*["\']([^"\']+)["\']', line)
+              if m:
+                  return m.group(1)
+              if "getenv" not in line and "Property" not in line:
+                  m = re.search(r'["\']([^"\']+)["\']', line)
+                  if m:
+                      return m.group(1)
+              return default
+
+          if gradle_file.exists():
+              text = gradle_file.read_text(encoding="utf-8", errors="ignore")
+              idx = text.find("debugConfig")
+              if idx == -1:
+                  idx = text.find("signingConfigs")
+              if idx != -1:
+                  snippet = "\n".join(text[idx:].splitlines()[:20])
+                  print("=== signingConfigs snippet ===")
+                  print(snippet)
+                  for line in snippet.splitlines():
+                      if "storePassword" in line:
+                          store_pass = extract_val(line, store_pass)
+                      elif "keyPassword" in line:
+                          key_pass = extract_val(line, key_pass)
+                      elif "keyAlias" in line:
+                          key_alias = extract_val(line, key_alias)
+
+          print(f"Generating debug.keystore with alias={key_alias}")
+          subprocess.run([
+              "keytool", "-genkeypair", "-noprompt",
+              "-keystore", "debug.keystore",
+              "-keyalg", "RSA", "-keysize", "2048", "-validity", "10000",
+              "-alias", key_alias,
+              "-storepass", store_pass,
+              "-keypass", key_pass,
+              "-dname", "CN=Android Debug,O=Android,C=US"
+          ], check=True)
+          EOF
+          fi
+
       - name: Build Debug APK
         working-directory: ${{ steps.detect.outputs.project_dir }}
         shell: bash
