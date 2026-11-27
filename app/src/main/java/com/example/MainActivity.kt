@@ -26,6 +26,10 @@ class MainActivity : ComponentActivity() {
   @OptIn(ExperimentalSharedTransitionApi::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    // Configure Firebase App Check with launch intent before any UI or ViewModels
+    configureAppCheck(this, intent)
+
     enableEdgeToEdge(
       statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
       navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
@@ -67,16 +71,22 @@ class MainActivity : ComponentActivity() {
                 AppStage.HOME ->
                   HomeScreen(
                     uiState = uiState,
-                    quotes = viewModel.filteredQuotes(uiState.selectedCategory),
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this@AnimatedContent,
                     onSelectTab = viewModel::selectTab,
                     onSelectVibe = viewModel::selectVibe,
                     onSendGoodVibes = viewModel::sendGoodVibes,
                     onToggleBreathing = viewModel::toggleBreathing,
-                    onSelectCategory = viewModel::selectInspireCategory,
-                    onNextQuote = viewModel::nextQuote,
-                    onToggleFavoriteQuote = viewModel::toggleFavoriteQuote,
+                    onSelectCause = viewModel::selectDonationCause,
+                    onSelectAmount = viewModel::selectDonationAmount,
+                    onSelectPayment = viewModel::selectPaymentMethod,
+                    onUpdateDonorNote = viewModel::updateDonorNote,
+                    onToggleAiBlessing = viewModel::toggleIncludeAiBlessing,
+                    onSubmitDonation = viewModel::submitCartoonDonation,
+                    onStartAnotherDonation = viewModel::startAnotherDonation,
+                    onSendAiPrompt = viewModel::sendAiPrompt,
+                    onDismissAiError = viewModel::dismissAiError,
+                    onClearAiChat = viewModel::clearAiChat,
                     onUpdateMotto = viewModel::updateMotto,
                     onUpdatePin = viewModel::updateCustomPin,
                     onResetPin = viewModel::resetPinToDefault,

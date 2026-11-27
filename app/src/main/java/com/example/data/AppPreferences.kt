@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -19,7 +18,8 @@ data class UserPrefsSnapshot(
   val customMotto: String = "Standing strong with faith, pride & island spirit.",
   val unlockCount: Int = 0,
   val goodVibesCount: Int = 7,
-  val favoriteQuoteIds: Set<String> = setOf("q1"),
+  val totalDonatedDollars: Int = 0,
+  val donationCount: Int = 0,
 ) {
   companion object {
     const val DEFAULT_PIN = "1234"
@@ -34,7 +34,8 @@ class AppPreferences(private val context: Context) {
     val CUSTOM_MOTTO = stringPreferencesKey("custom_motto")
     val UNLOCK_COUNT = intPreferencesKey("unlock_count")
     val GOOD_VIBES_COUNT = intPreferencesKey("good_vibes_count")
-    val FAVORITE_QUOTES = stringSetPreferencesKey("favorite_quotes")
+    val TOTAL_DONATED_DOLLARS = intPreferencesKey("total_donated_dollars")
+    val DONATION_COUNT = intPreferencesKey("donation_count")
   }
 
   val prefsFlow: Flow<UserPrefsSnapshot> =
@@ -46,14 +47,21 @@ class AppPreferences(private val context: Context) {
           prefs[Keys.CUSTOM_MOTTO] ?: "Standing strong with faith, pride & island spirit.",
         unlockCount = prefs[Keys.UNLOCK_COUNT] ?: 0,
         goodVibesCount = prefs[Keys.GOOD_VIBES_COUNT] ?: 7,
-        favoriteQuoteIds = prefs[Keys.FAVORITE_QUOTES] ?: setOf("q1"),
+        totalDonatedDollars = prefs[Keys.TOTAL_DONATED_DOLLARS] ?: 0,
+        donationCount = prefs[Keys.DONATION_COUNT] ?: 0,
       )
     }
 
   suspend fun incrementUnlockCount() {
     context.dataStore.edit { prefs ->
-      val current = prefs[Keys.UNLOCK_COUNT] ?: 0
-      prefs[Keys.UNLOCK_COUNT] = current + 1
+      prefs[Keys.UNLOCK_COUNT] = (prefs[Keys.UNLOCK_COUNT] ?: 0) + 1
+    }
+  }
+
+  suspend fun recordMockDonation(amountDollars: Int) {
+    context.dataStore.edit { prefs ->
+      prefs[Keys.TOTAL_DONATED_DOLLARS] = (prefs[Keys.TOTAL_DONATED_DOLLARS] ?: 0) + amountDollars
+      prefs[Keys.DONATION_COUNT] = (prefs[Keys.DONATION_COUNT] ?: 0) + 1
     }
   }
 
@@ -77,16 +85,7 @@ class AppPreferences(private val context: Context) {
 
   suspend fun incrementGoodVibes() {
     context.dataStore.edit { prefs ->
-      val current = prefs[Keys.GOOD_VIBES_COUNT] ?: 7
-      prefs[Keys.GOOD_VIBES_COUNT] = current + 1
-    }
-  }
-
-  suspend fun toggleFavoriteQuote(quoteId: String) {
-    context.dataStore.edit { prefs ->
-      val current = prefs[Keys.FAVORITE_QUOTES] ?: setOf("q1")
-      prefs[Keys.FAVORITE_QUOTES] =
-        if (quoteId in current) current - quoteId else current + quoteId
+      prefs[Keys.GOOD_VIBES_COUNT] = (prefs[Keys.GOOD_VIBES_COUNT] ?: 7) + 1
     }
   }
 }

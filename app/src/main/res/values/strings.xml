@@ -2,7 +2,7 @@
     <string name="app_name">Vahai</string>
     <string name="welcome_eyebrow">MĀLŌ E LELEI • WELCOME</string>
     <string name="welcome_title">Welcome</string>
-    <string name="welcome_subtitle">Tap into your personal space crafted with island spirit and energy.</string>
+    <string name="welcome_subtitle">Tap into Sipiliano\'s personal island hub, cartoon gift jar, and AI companion.</string>
     <string name="enter_home_cta">Unlock Space</string>
     <string name="user_full_name">Sipiliano Vahai</string>
     <string name="status_online">Online • Active</string>
@@ -16,9 +16,10 @@
     <string name="pin_backspace_cd">Delete digit</string>
     <string name="pin_back_cd">Back to welcome</string>
     <string name="home_tab_label">Home</string>
-    <string name="inspire_tab_label">Inspire</string>
+    <string name="donate_tab_label">Give</string>
+    <string name="ai_tab_label">Vahai AI</string>
     <string name="profile_tab_label">Profile</string>
-    <string name="home_header_label">Personal Hub</string>
+    <string name="home_header_label">Vahai Hub</string>
     <string name="replay_welcome_cd">Lock and return to welcome screen</string>
     <string name="portrait_cd">Sipiliano Vahai portrait</string>
     <string name="greeting_morning_title">Good Morning</string>
@@ -29,4 +30,5 @@
     <string name="greeting_evening_body">Golden sunset horizon — unwind and recharge your spirit.</string>
     <string name="greeting_night_title">Good Night</string>
     <string name="greeting_night_body">Peaceful bioluminescent waters under the quiet night sky.</string>
+    <string name="demo_badge_label">CARTOON DEMO • NO REAL CHARGE</string>
 </resources>

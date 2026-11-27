@@ -33,13 +33,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Air
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.CardGiftcard
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.NightsStay
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material.icons.rounded.WbTwilight
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -63,9 +67,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.AppUiState
 import com.example.GreetingPeriod
+import com.example.HomeTab
 import com.example.R
 import com.example.VIBE_OPTIONS
 import com.example.ui.theme.BiolumCyan
+import com.example.ui.theme.CartoonInk
 import com.example.ui.theme.CartoonPurple
 import com.example.ui.theme.HibiscusCoral
 import com.example.ui.theme.IceWhite
@@ -87,6 +93,7 @@ fun HomeTabContent(
   onSelectVibe: (String) -> Unit,
   onSendGoodVibes: () -> Unit,
   onToggleBreathing: () -> Unit,
+  onJumpToTab: (HomeTab) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   val haptic = LocalHapticFeedback.current
@@ -124,11 +131,11 @@ fun HomeTabContent(
         color = OceanCardGlass,
         border =
           BorderStroke(
-            width = 1.2.dp,
-            brush = Brush.linearGradient(listOf(RoyalGold.copy(alpha = 0.5f), OceanRim, BiolumCyan.copy(alpha = 0.5f))),
+            width = 1.5.dp,
+            brush = Brush.linearGradient(listOf(RoyalGold.copy(alpha = 0.55f), OceanRim, BiolumCyan.copy(alpha = 0.5f))),
           ),
       ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(22.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
           Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -140,7 +147,7 @@ fun HomeTabContent(
               contentScale = ContentScale.Crop,
               modifier =
                 Modifier
-                  .size(72.dp)
+                  .size(74.dp)
                   .sharedElement(
                     state = rememberSharedContentState(key = "vahai_emblem"),
                     animatedVisibilityScope = animatedVisibilityScope,
@@ -148,7 +155,7 @@ fun HomeTabContent(
                   )
                   .clip(CircleShape)
                   .border(
-                    width = 2.dp,
+                    width = 2.5.dp,
                     brush = Brush.linearGradient(listOf(RoyalGold, BiolumCyan, SeafoamTeal)),
                     shape = CircleShape,
                   ),
@@ -156,11 +163,11 @@ fun HomeTabContent(
 
             Column(
               modifier = Modifier.weight(1f),
-              verticalArrangement = Arrangement.spacedBy(8.dp),
+              verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-              Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+              FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
               ) {
                 Surface(
                   shape = RoundedCornerShape(50),
@@ -169,7 +176,7 @@ fun HomeTabContent(
                   modifier = Modifier.testTag("status_badge"),
                 ) {
                   Row(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                   ) {
@@ -190,14 +197,14 @@ fun HomeTabContent(
 
                 Surface(
                   shape = RoundedCornerShape(50),
-                  color = RoyalGold.copy(alpha = 0.15f),
-                  border = BorderStroke(1.dp, RoyalGold.copy(alpha = 0.4f)),
+                  color = RoyalGold.copy(alpha = 0.16f),
+                  border = BorderStroke(1.dp, RoyalGold.copy(alpha = 0.45f)),
                 ) {
                   Text(
-                    text = "${uiState.unlockCount} Unlocks",
+                    text = uiState.donorRank,
                     style = MaterialTheme.typography.labelMedium,
                     color = RoyalGold,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                   )
                 }
               }
@@ -211,7 +218,7 @@ fun HomeTabContent(
             }
           }
 
-          Spacer(modifier = Modifier.height(14.dp))
+          Spacer(modifier = Modifier.height(12.dp))
 
           Text(
             text = "\"${uiState.customMotto}\"",
@@ -219,7 +226,7 @@ fun HomeTabContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
 
-          Spacer(modifier = Modifier.height(16.dp))
+          Spacer(modifier = Modifier.height(14.dp))
 
           Text(
             text = "TODAY'S VIBE",
@@ -248,11 +255,7 @@ fun HomeTabContent(
               Surface(
                 shape = RoundedCornerShape(50),
                 color = chipBg,
-                border =
-                  BorderStroke(
-                    1.dp,
-                    if (isSelected) BiolumCyan else OceanRim,
-                  ),
+                border = BorderStroke(1.5.dp, if (isSelected) BiolumCyan else OceanRim),
                 modifier =
                   Modifier
                     .clip(RoundedCornerShape(50))
@@ -266,9 +269,110 @@ fun HomeTabContent(
                   text = vibe,
                   style = MaterialTheme.typography.labelLarge,
                   color = chipFg,
-                  modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                  modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                 )
               }
+            }
+          }
+        }
+      }
+
+      // Cartoon Donation Quick-Launch Banner
+      Surface(
+        modifier = Modifier.fillMaxWidth().testTag("home_donate_banner"),
+        shape = RoundedCornerShape(24.dp),
+        color = RoyalGold.copy(alpha = 0.14f),
+        border = BorderStroke(2.dp, RoyalGold.copy(alpha = 0.6f)),
+      ) {
+        Column(
+          modifier = Modifier.fillMaxWidth().padding(18.dp),
+          verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+              Surface(
+                shape = CircleShape,
+                color = RoyalGold,
+                border = BorderStroke(2.dp, CartoonInk),
+              ) {
+                Box(modifier = Modifier.size(38.dp), contentAlignment = Alignment.Center) {
+                  Icon(
+                    imageVector = Icons.Rounded.CardGiftcard,
+                    contentDescription = null,
+                    tint = CartoonInk,
+                    modifier = Modifier.size(20.dp),
+                  )
+                }
+              }
+              Column {
+                Text(
+                  text = "Cartoon Gift Vault (Demo)",
+                  style = MaterialTheme.typography.titleMedium,
+                  color = IceWhite,
+                )
+                Text(
+                  text = "$${uiState.communityGoalRaised} of $${uiState.communityGoalTarget} island goal",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = RoyalGold,
+                )
+              }
+            }
+          }
+
+          val goalProgress by
+            animateFloatAsState(
+              targetValue =
+                (uiState.communityGoalRaised.toFloat() / uiState.communityGoalTarget.toFloat())
+                  .coerceIn(0f, 1f),
+              animationSpec = tween(700),
+              label = "goal_bar",
+            )
+          LinearProgressIndicator(
+            progress = { goalProgress },
+            modifier = Modifier.fillMaxWidth().height(9.dp).clip(CircleShape),
+            color = RoyalGold,
+            trackColor = OceanTrench,
+            strokeCap = StrokeCap.Round,
+          )
+
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+          ) {
+            Button(
+              onClick = { onJumpToTab(HomeTab.GIVE) },
+              modifier = Modifier.weight(1f).height(48.dp).testTag("jump_to_give_button"),
+              shape = RoundedCornerShape(14.dp),
+              colors = ButtonDefaults.buttonColors(containerColor = RoyalGold, contentColor = CartoonInk),
+            ) {
+              Text(text = "Donate (Demo)", style = MaterialTheme.typography.labelLarge)
+              Spacer(modifier = Modifier.width(6.dp))
+              Icon(
+                imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+              )
+            }
+            Button(
+              onClick = { onJumpToTab(HomeTab.AI) },
+              modifier = Modifier.weight(1f).height(48.dp).testTag("jump_to_ai_button"),
+              shape = RoundedCornerShape(14.dp),
+              colors = ButtonDefaults.buttonColors(containerColor = BiolumCyan, contentColor = OceanAbyss),
+            ) {
+              Icon(
+                imageVector = Icons.Rounded.AutoAwesome,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+              )
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(text = "Ask Vahai AI", style = MaterialTheme.typography.labelLarge)
             }
           }
         }
@@ -389,7 +493,7 @@ private fun LiveGreetingCard(
         }
       }
 
-      Spacer(modifier = Modifier.height(12.dp))
+      Spacer(modifier = Modifier.height(10.dp))
 
       Text(
         text = stringResource(greetingPeriod.bodyRes),
@@ -442,7 +546,7 @@ private fun GoodVibesWidget(
         .testTag("good_vibes_button"),
     shape = RoundedCornerShape(24.dp),
     color = HibiscusCoral.copy(alpha = 0.14f),
-    border = BorderStroke(1.dp, HibiscusCoral.copy(alpha = 0.45f)),
+    border = BorderStroke(1.5.dp, HibiscusCoral.copy(alpha = 0.5f)),
   ) {
     Column(
       modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -509,7 +613,7 @@ private fun BreatheTideWidget(
         .testTag("breathe_tide_button"),
     shape = RoundedCornerShape(24.dp),
     color = CartoonPurple.copy(alpha = 0.14f),
-    border = BorderStroke(1.dp, CartoonPurple.copy(alpha = 0.45f)),
+    border = BorderStroke(1.5.dp, CartoonPurple.copy(alpha = 0.5f)),
   ) {
     Column(
       modifier = Modifier.fillMaxWidth().padding(16.dp),

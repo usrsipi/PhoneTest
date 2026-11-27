@@ -30,9 +30,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.Lock
@@ -54,9 +56,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.AppUiState
+import com.example.DonationCause
+import com.example.DonationPaymentMethod
 import com.example.HomeTab
-import com.example.InspireCategory
-import com.example.InspireQuote
 import com.example.R
 import com.example.ui.theme.BiolumCyan
 import com.example.ui.theme.OceanElevated
@@ -68,16 +70,22 @@ import com.example.ui.theme.RoyalGold
 @Composable
 fun HomeScreen(
   uiState: AppUiState,
-  quotes: List<InspireQuote>,
   sharedTransitionScope: SharedTransitionScope,
   animatedVisibilityScope: AnimatedVisibilityScope,
   onSelectTab: (HomeTab) -> Unit,
   onSelectVibe: (String) -> Unit,
   onSendGoodVibes: () -> Unit,
   onToggleBreathing: () -> Unit,
-  onSelectCategory: (InspireCategory) -> Unit,
-  onNextQuote: () -> Unit,
-  onToggleFavoriteQuote: (String) -> Unit,
+  onSelectCause: (DonationCause) -> Unit,
+  onSelectAmount: (Int) -> Unit,
+  onSelectPayment: (DonationPaymentMethod) -> Unit,
+  onUpdateDonorNote: (String) -> Unit,
+  onToggleAiBlessing: () -> Unit,
+  onSubmitDonation: () -> Unit,
+  onStartAnotherDonation: () -> Unit,
+  onSendAiPrompt: (String) -> Unit,
+  onDismissAiError: () -> Unit,
+  onClearAiChat: () -> Unit,
   onUpdateMotto: (String) -> Unit,
   onUpdatePin: (String) -> Boolean,
   onResetPin: () -> Unit,
@@ -98,7 +106,7 @@ fun HomeScreen(
     containerColor = Color.Transparent,
     contentWindowInsets = WindowInsets(0, 0, 0, 0),
     bottomBar = {
-      Column(modifier = Modifier.fillMaxWidth().background(OceanTrench.copy(alpha = 0.95f))) {
+      Column(modifier = Modifier.fillMaxWidth().background(OceanTrench.copy(alpha = 0.96f))) {
         HorizontalDivider(color = OceanRim.copy(alpha = 0.55f), thickness = 1.dp)
         NavigationBar(
           containerColor = Color.Transparent,
@@ -115,26 +123,37 @@ fun HomeScreen(
                 contentDescription = stringResource(R.string.home_tab_label),
               )
             },
-            label = {
-              Text(text = stringResource(R.string.home_tab_label), style = MaterialTheme.typography.labelLarge)
-            },
+            label = { Text(stringResource(R.string.home_tab_label), style = MaterialTheme.typography.labelLarge) },
             colors = navBarColors(),
           )
           NavigationBarItem(
-            selected = uiState.activeTab == HomeTab.INSPIRE,
-            onClick = { onSelectTab(HomeTab.INSPIRE) },
-            modifier = Modifier.testTag("inspire_tab"),
+            selected = uiState.activeTab == HomeTab.GIVE,
+            onClick = { onSelectTab(HomeTab.GIVE) },
+            modifier = Modifier.testTag("give_tab"),
             icon = {
               Icon(
                 imageVector =
-                  if (uiState.activeTab == HomeTab.INSPIRE) Icons.Filled.AutoAwesome
-                  else Icons.Outlined.AutoAwesome,
-                contentDescription = stringResource(R.string.inspire_tab_label),
+                  if (uiState.activeTab == HomeTab.GIVE) Icons.Filled.CardGiftcard
+                  else Icons.Outlined.CardGiftcard,
+                contentDescription = stringResource(R.string.donate_tab_label),
               )
             },
-            label = {
-              Text(text = stringResource(R.string.inspire_tab_label), style = MaterialTheme.typography.labelLarge)
+            label = { Text(stringResource(R.string.donate_tab_label), style = MaterialTheme.typography.labelLarge) },
+            colors = navBarColors(RoyalGold),
+          )
+          NavigationBarItem(
+            selected = uiState.activeTab == HomeTab.AI,
+            onClick = { onSelectTab(HomeTab.AI) },
+            modifier = Modifier.testTag("ai_tab"),
+            icon = {
+              Icon(
+                imageVector =
+                  if (uiState.activeTab == HomeTab.AI) Icons.Filled.AutoAwesome
+                  else Icons.Outlined.AutoAwesome,
+                contentDescription = stringResource(R.string.ai_tab_label),
+              )
             },
+            label = { Text(stringResource(R.string.ai_tab_label), style = MaterialTheme.typography.labelLarge) },
             colors = navBarColors(),
           )
           NavigationBarItem(
@@ -147,9 +166,7 @@ fun HomeScreen(
                 contentDescription = stringResource(R.string.profile_tab_label),
               )
             },
-            label = {
-              Text(text = stringResource(R.string.profile_tab_label), style = MaterialTheme.typography.labelLarge)
-            },
+            label = { Text(stringResource(R.string.profile_tab_label), style = MaterialTheme.typography.labelLarge) },
             colors = navBarColors(),
           )
         }
@@ -177,7 +194,8 @@ fun HomeScreen(
               text =
                 when (uiState.activeTab) {
                   HomeTab.HOME -> stringResource(R.string.home_tab_label).uppercase()
-                  HomeTab.INSPIRE -> stringResource(R.string.inspire_tab_label).uppercase()
+                  HomeTab.GIVE -> "CARTOON GIFT VAULT"
+                  HomeTab.AI -> "GEMINI AI COMPANION"
                   HomeTab.PROFILE -> stringResource(R.string.profile_tab_label).uppercase()
                 },
               style = MaterialTheme.typography.labelMedium,
@@ -208,12 +226,12 @@ fun HomeScreen(
           }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         AnimatedContent(
           targetState = uiState.activeTab,
           transitionSpec = {
-            fadeIn(animationSpec = tween(240)) togetherWith fadeOut(animationSpec = tween(180))
+            fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(160))
           },
           label = "home_tab_switcher",
         ) { tab ->
@@ -226,14 +244,25 @@ fun HomeScreen(
                 onSelectVibe = onSelectVibe,
                 onSendGoodVibes = onSendGoodVibes,
                 onToggleBreathing = onToggleBreathing,
+                onJumpToTab = onSelectTab,
               )
-            HomeTab.INSPIRE ->
-              InspireTabContent(
+            HomeTab.GIVE ->
+              DonateTabContent(
                 uiState = uiState,
-                quotes = quotes,
-                onSelectCategory = onSelectCategory,
-                onNextQuote = onNextQuote,
-                onToggleFavorite = onToggleFavoriteQuote,
+                onSelectCause = onSelectCause,
+                onSelectAmount = onSelectAmount,
+                onSelectPayment = onSelectPayment,
+                onUpdateNote = onUpdateDonorNote,
+                onToggleAiBlessing = onToggleAiBlessing,
+                onSubmitDonation = onSubmitDonation,
+                onStartAnother = onStartAnotherDonation,
+              )
+            HomeTab.AI ->
+              VahaiAiTabContent(
+                uiState = uiState,
+                onSendPrompt = onSendAiPrompt,
+                onDismissError = onDismissAiError,
+                onClearChat = onClearAiChat,
               )
             HomeTab.PROFILE ->
               ProfileTabContent(
@@ -246,18 +275,18 @@ fun HomeScreen(
           }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
       }
     }
   }
 }
 
 @Composable
-private fun navBarColors() =
+private fun navBarColors(accent: Color = BiolumCyan) =
   NavigationBarItemDefaults.colors(
-    selectedIconColor = BiolumCyan,
-    selectedTextColor = BiolumCyan,
-    indicatorColor = BiolumCyan.copy(alpha = 0.16f),
+    selectedIconColor = accent,
+    selectedTextColor = accent,
+    indicatorColor = accent.copy(alpha = 0.16f),
     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
   )
