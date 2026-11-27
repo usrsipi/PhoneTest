@@ -16,6 +16,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ui.CartoonPinScreen
 import com.example.ui.HomeScreen
 import com.example.ui.OceanBackdrop
 import com.example.ui.WelcomeScreen
@@ -37,26 +38,51 @@ class MainActivity : ComponentActivity() {
         OceanBackdrop {
           SharedTransitionLayout {
             AnimatedContent(
-              targetState = uiState.isHomeEntered,
+              targetState = uiState.stage,
               transitionSpec = {
-                fadeIn(animationSpec = tween(durationMillis = 320)) togetherWith
-                  fadeOut(animationSpec = tween(durationMillis = 240))
+                fadeIn(animationSpec = tween(durationMillis = 300)) togetherWith
+                  fadeOut(animationSpec = tween(durationMillis = 220))
               },
-              label = "welcome_to_home_transition",
-            ) { isHomeEntered ->
-              if (isHomeEntered) {
-                HomeScreen(
-                  uiState = uiState,
-                  sharedTransitionScope = this@SharedTransitionLayout,
-                  animatedVisibilityScope = this@AnimatedContent,
-                  onReturnToWelcome = viewModel::returnToWelcome,
-                )
-              } else {
-                WelcomeScreen(
-                  sharedTransitionScope = this@SharedTransitionLayout,
-                  animatedVisibilityScope = this@AnimatedContent,
-                  onEnterHome = viewModel::enterHome,
-                )
+              label = "app_stage_transition",
+            ) { stage ->
+              when (stage) {
+                AppStage.WELCOME ->
+                  WelcomeScreen(
+                    formattedTime = uiState.formattedTime,
+                    formattedDate = uiState.formattedDate,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                    onEnterClick = viewModel::openPinScreen,
+                  )
+                AppStage.PIN_LOCK ->
+                  CartoonPinScreen(
+                    uiState = uiState,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                    onDigitPressed = viewModel::onPinDigitPressed,
+                    onBackspace = viewModel::onPinBackspace,
+                    onResetPin = viewModel::resetPinToDefault,
+                    onBackToWelcome = viewModel::returnToWelcome,
+                  )
+                AppStage.HOME ->
+                  HomeScreen(
+                    uiState = uiState,
+                    quotes = viewModel.filteredQuotes(uiState.selectedCategory),
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                    onSelectTab = viewModel::selectTab,
+                    onSelectVibe = viewModel::selectVibe,
+                    onSendGoodVibes = viewModel::sendGoodVibes,
+                    onToggleBreathing = viewModel::toggleBreathing,
+                    onSelectCategory = viewModel::selectInspireCategory,
+                    onNextQuote = viewModel::nextQuote,
+                    onToggleFavoriteQuote = viewModel::toggleFavoriteQuote,
+                    onUpdateMotto = viewModel::updateMotto,
+                    onUpdatePin = viewModel::updateCustomPin,
+                    onResetPin = viewModel::resetPinToDefault,
+                    onLockToPin = viewModel::lockToPinScreen,
+                    onReturnToWelcome = viewModel::returnToWelcome,
+                  )
               }
             }
           }

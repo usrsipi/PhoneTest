@@ -3,6 +3,6 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/ocean_crest_icon_1795668701334"
+        android:drawable="@drawable/vahai_portrait"
         android:gravity="center" />
 </layer-list>

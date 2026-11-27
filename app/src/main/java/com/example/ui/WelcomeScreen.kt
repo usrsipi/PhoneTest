@@ -6,6 +6,7 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
@@ -14,6 +15,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +37,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -42,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,7 +54,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,34 +64,57 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.ui.theme.BiolumCyan
-import com.example.ui.theme.BiolumGlow
 import com.example.ui.theme.OceanAbyss
 import com.example.ui.theme.OceanCardGlass
 import com.example.ui.theme.OceanRim
+import com.example.ui.theme.RoyalGold
 import com.example.ui.theme.SeafoamTeal
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun WelcomeScreen(
+  formattedTime: String,
+  formattedDate: String,
   sharedTransitionScope: SharedTransitionScope,
   animatedVisibilityScope: AnimatedVisibilityScope,
-  onEnterHome: () -> Unit,
+  onEnterClick: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
+  val haptic = LocalHapticFeedback.current
   val pulseTransition = rememberInfiniteTransition(label = "welcome_pulse")
   val auraScale by
     pulseTransition.animateFloat(
-      initialValue = 0.96f,
-      targetValue = 1.06f,
+      initialValue = 0.94f,
+      targetValue = 1.08f,
       animationSpec =
         infiniteRepeatable(
-          animation = tween(durationMillis = 2800, easing = FastOutSlowInEasing),
+          animation = tween(durationMillis = 2600, easing = FastOutSlowInEasing),
           repeatMode = RepeatMode.Reverse,
         ),
       label = "aura_scale",
     )
+  val floatOffset by
+    pulseTransition.animateFloat(
+      initialValue = -5f,
+      targetValue = 5f,
+      animationSpec =
+        infiniteRepeatable(
+          animation = tween(durationMillis = 3200, easing = FastOutSlowInEasing),
+          repeatMode = RepeatMode.Reverse,
+        ),
+      label = "float_offset",
+    )
 
-  val boundsSpring = spring<Rect>(dampingRatio = 0.82f, stiffness = 320f)
+  val interactionSource = remember { MutableInteractionSource() }
+  val isPressed by interactionSource.collectIsPressedAsState()
+  val buttonScale by
+    animateFloatAsState(
+      targetValue = if (isPressed) 0.95f else 1f,
+      animationSpec = spring(dampingRatio = 0.5f, stiffness = 500f),
+      label = "cta_squish",
+    )
+
+  val boundsSpring = spring<Rect>(dampingRatio = 0.80f, stiffness = 320f)
 
   with(sharedTransitionScope) {
     Box(
@@ -92,7 +122,7 @@ fun WelcomeScreen(
         modifier
           .fillMaxSize()
           .windowInsetsPadding(WindowInsets.safeDrawing)
-          .padding(horizontal = 24.dp, vertical = 24.dp),
+          .padding(horizontal = 24.dp, vertical = 20.dp),
       contentAlignment = Alignment.Center,
     ) {
       Surface(
@@ -107,19 +137,42 @@ fun WelcomeScreen(
             ),
         shape = RoundedCornerShape(32.dp),
         color = OceanCardGlass,
-        border = BorderStroke(1.dp, OceanRim.copy(alpha = 0.8f)),
+        border =
+          BorderStroke(
+            width = 1.2.dp,
+            brush = Brush.linearGradient(listOf(RoyalGold.copy(alpha = 0.45f), OceanRim, BiolumCyan.copy(alpha = 0.45f))),
+          ),
         tonalElevation = 0.dp,
       ) {
         Column(
-          modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 36.dp),
+          modifier = Modifier.fillMaxWidth().padding(horizontal = 26.dp, vertical = 30.dp),
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.Center,
         ) {
-          Box(contentAlignment = Alignment.Center) {
+          if (formattedTime.isNotEmpty()) {
+            Surface(
+              shape = RoundedCornerShape(50),
+              color = OceanAbyss.copy(alpha = 0.7f),
+              border = BorderStroke(1.dp, OceanRim),
+            ) {
+              Text(
+                text = "$formattedDate • $formattedTime",
+                style = MaterialTheme.typography.labelMedium,
+                color = BiolumCyan,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+              )
+            }
+            Spacer(modifier = Modifier.height(22.dp))
+          }
+
+          Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.graphicsLayer { translationY = floatOffset },
+          ) {
             Box(
               modifier =
                 Modifier
-                  .size(132.dp)
+                  .size(164.dp)
                   .graphicsLayer {
                     scaleX = auraScale
                     scaleY = auraScale
@@ -129,8 +182,8 @@ fun WelcomeScreen(
                       Brush.radialGradient(
                         colors =
                           listOf(
-                            BiolumCyan.copy(alpha = 0.34f),
-                            SeafoamTeal.copy(alpha = 0.12f),
+                            RoyalGold.copy(alpha = 0.34f),
+                            BiolumCyan.copy(alpha = 0.22f),
                             OceanAbyss.copy(alpha = 0f),
                           ),
                       ),
@@ -138,36 +191,36 @@ fun WelcomeScreen(
                   ),
             )
             Image(
-              painter = painterResource(id = R.drawable.ocean_crest_icon_1795668701334),
-              contentDescription = stringResource(R.string.ocean_crest_cd),
+              painter = painterResource(id = R.drawable.vahai_portrait),
+              contentDescription = stringResource(R.string.portrait_cd),
               contentScale = ContentScale.Crop,
               modifier =
                 Modifier
-                  .size(104.dp)
+                  .size(134.dp)
                   .sharedElement(
-                    state = rememberSharedContentState(key = "ocean_emblem"),
+                    state = rememberSharedContentState(key = "vahai_emblem"),
                     animatedVisibilityScope = animatedVisibilityScope,
                     boundsTransform = { _, _ -> boundsSpring },
                   )
                   .clip(CircleShape)
                   .border(
-                    width = 2.dp,
-                    brush = Brush.linearGradient(listOf(BiolumCyan, SeafoamTeal)),
+                    width = 2.5.dp,
+                    brush = Brush.linearGradient(listOf(RoyalGold, BiolumCyan, SeafoamTeal)),
                     shape = CircleShape,
                   ),
             )
           }
 
-          Spacer(modifier = Modifier.height(28.dp))
+          Spacer(modifier = Modifier.height(24.dp))
 
           Text(
             text = stringResource(R.string.welcome_eyebrow),
             style = MaterialTheme.typography.labelMedium,
-            color = SeafoamTeal,
+            color = RoyalGold,
             textAlign = TextAlign.Center,
           )
 
-          Spacer(modifier = Modifier.height(10.dp))
+          Spacer(modifier = Modifier.height(8.dp))
 
           Text(
             text = stringResource(R.string.welcome_title),
@@ -177,7 +230,7 @@ fun WelcomeScreen(
             modifier = Modifier.testTag("welcome_title_text"),
           )
 
-          Spacer(modifier = Modifier.height(12.dp))
+          Spacer(modifier = Modifier.height(10.dp))
 
           Text(
             text = stringResource(R.string.welcome_subtitle),
@@ -186,22 +239,30 @@ fun WelcomeScreen(
             textAlign = TextAlign.Center,
           )
 
-          Spacer(modifier = Modifier.height(34.dp))
+          Spacer(modifier = Modifier.height(28.dp))
 
           Button(
-            onClick = onEnterHome,
+            onClick = {
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              onEnterClick()
+            },
+            interactionSource = interactionSource,
             modifier =
               Modifier
                 .fillMaxWidth()
-                .height(58.dp)
+                .height(60.dp)
+                .graphicsLayer {
+                  scaleX = buttonScale
+                  scaleY = buttonScale
+                }
                 .shadow(
-                  elevation = 16.dp,
-                  shape = RoundedCornerShape(18.dp),
+                  elevation = 18.dp,
+                  shape = RoundedCornerShape(20.dp),
                   ambientColor = BiolumCyan,
-                  spotColor = BiolumCyan,
+                  spotColor = RoyalGold,
                 )
-                .testTag("enter_home_button"),
-            shape = RoundedCornerShape(18.dp),
+                .testTag("enter_pin_button"),
+            shape = RoundedCornerShape(20.dp),
             colors =
               ButtonDefaults.buttonColors(
                 containerColor = BiolumCyan,
@@ -213,11 +274,18 @@ fun WelcomeScreen(
               verticalAlignment = Alignment.CenterVertically,
               horizontalArrangement = Arrangement.Center,
             ) {
+              Icon(
+                imageVector = Icons.Rounded.LockOpen,
+                contentDescription = null,
+                tint = OceanAbyss,
+                modifier = Modifier.size(20.dp),
+              )
+              Spacer(modifier = Modifier.width(10.dp))
               Text(
                 text = stringResource(R.string.enter_home_cta),
                 style = MaterialTheme.typography.titleMedium,
               )
-              Spacer(modifier = Modifier.width(10.dp))
+              Spacer(modifier = Modifier.width(8.dp))
               Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                 contentDescription = null,
@@ -226,19 +294,6 @@ fun WelcomeScreen(
               )
             }
           }
-
-          Spacer(modifier = Modifier.height(8.dp))
-
-          Box(
-            modifier =
-              Modifier
-                .padding(top = 12.dp)
-                .size(width = 48.dp, height = 3.dp)
-                .background(
-                  brush = Brush.horizontalGradient(listOf(BiolumCyan, SeafoamTeal, BiolumGlow)),
-                  shape = CircleShape,
-                ),
-          )
         }
       }
     }
